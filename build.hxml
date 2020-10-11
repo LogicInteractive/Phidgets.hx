@@ -1,0 +1,6 @@
+-cp src
+-main Main
+-cp C:/dev/fox/common
+-cp C:/dev/fox/thirdparty/common
+--cpp bin/build
+-D HXCPP_M64
