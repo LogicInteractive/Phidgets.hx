@@ -1,6 +1,6 @@
 <xml>
 	<set name="PROJECT_DIR" value="${this_dir}" />
-	<set name="CPP_DIR" value="${this_dir}/cpp/" />
+	<set name="CPP_DIR" value="${this_dir}/../cpp/" />
 	
 	<files id='haxe'>
 		<compilervalue name="-I" value="${CPP_DIR}/include/" />

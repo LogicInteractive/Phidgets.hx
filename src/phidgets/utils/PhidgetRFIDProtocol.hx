@@ -1,4 +1,4 @@
-package phidgets;
+package phidgets.utils;
 
 enum abstract PhidgetRFIDProtocol(Int) from Int to Int
 {

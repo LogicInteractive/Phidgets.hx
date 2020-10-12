@@ -1,4 +1,4 @@
-package phidgets;
+package phidgets.utils;
 
 enum abstract PhidgetReturnCode(Int) from Int to Int
 {

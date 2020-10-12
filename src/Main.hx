@@ -2,6 +2,7 @@ package;
 
 import no.logic.fox.Fox;
 import no.logic.fox.core.system.Tick;
+import phidgets.Phidget;
 import phidgets.PhidgetRFID;
 
 class Main
