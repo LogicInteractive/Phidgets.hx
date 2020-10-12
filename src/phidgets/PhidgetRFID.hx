@@ -29,26 +29,6 @@ import phidgets.utils.PhidgetReturnCode;
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	PhidgetRFIDHandle handle_internal;
-	bool isAttached_internal = false;
-
-	void CCONV onAttach_internal(PhidgetHandle ch, void * ctx)
-	{
-		// std::cout << "Attach!" << std::endl;
-		isAttached_internal = true;
-	}
-	
-	void CCONV onDetach_internal(PhidgetHandle ch, void * ctx)
-	{
-		// std::cout << "Detach!" << std::endl;
-		isAttached_internal = false;
-	}
-
-	void CCONV onError_internal(PhidgetHandle ch, void * ctx, Phidget_ErrorEventCode code, const char * description)
-	{
-		std::cout << "ERROR: Description: " << description << std::endl;
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////
 
 	std::string lastTag_internal;
 	std::string currentTag_internal;
@@ -123,28 +103,12 @@ class PhidgetRFID extends Phidget
 
  	/////////////////////////////////////////////////////////////////////////////////////
 
-	override public function attach()
-	{
-		if (isInitialized)
-			return;
-
-		onAttachCallback_internal = Phidget.OnAttachCallback_internal;
-		onDetachCallback_internal = Phidget.OnDetachCallback_internal;
-		onErrorCallback_internal = Phidget.OnErrorCallback_internal;
-
-		super.attach();
-	}
-
- 	/////////////////////////////////////////////////////////////////////////////////////
-
 	override function checkStatus()
 	{
 		super.checkStatus();
 		
 		if(isDisposed)
 			return;
-
-		triggerAttachstate(isAttached_internal);
 
 		var cTag:String = getCurrentTag_internal();
 		var lastTag:String = getLastTag_internal();
@@ -210,9 +174,6 @@ class PhidgetRFID extends Phidget
 	@:extern @:native("handle_internal")
 	public static var rfidHandle:PhidgetRFIDHandle;
 	
-	@:extern @:native("isAttached_internal")
-	public static var isAttached_internal:Bool;
-
 	@:extern @:native("currentTag_internal")
 	public static var CurrentTag_internal:StdString;
 

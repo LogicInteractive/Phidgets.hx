@@ -18,11 +18,45 @@ import phidgets.utils.PhidgetReturnCode;
 
 @:buildXml('<include name="../../src/phidgets/build/PhidgetsBuild.xml" />')
 @:headerInclude('phidget22.h')
+@:cppFileCode('
+	#include <iostream>
+	#include <string>	
+')
+@:cppNamespaceCode('	
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	bool isAttached_internal = false;
+
+	void CCONV onAttach_internal(PhidgetHandle ch, void * ctx)
+	{
+		// std::cout << ctx << std::endl;
+		isAttached_internal = true;
+		// Phidget_obj* cl = static_cast<Phidget_obj*>(ctx);
+		// std::cout << cl->wasAttachedLast << std::endl;
+		// if (cl)
+			// &cl->wasAttachedLast=true;
+	}
+	
+	void CCONV onDetach_internal(PhidgetHandle ch, void * ctx)
+	{
+		// std::cout << "Detach!" << std::endl;
+		isAttached_internal = false;
+		// static_cast<Phidget_obj*>(ctx)->wasAttachedLast=false;
+	}
+
+	void CCONV onError_internal(PhidgetHandle ch, void * ctx, Phidget_ErrorEventCode code, const char * description)
+	{
+		std::cout << "ERROR: Description: " << description << std::endl;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+')
 class Phidget
 {
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	public var isAttached			: Bool						= false;
+	// public var wasAttachedLast		: Bool						= false;
 	public var attachTimeoutMS		: Int						= 5000;
 	public var checkIntervalMS		: Int						= 16;
 	public var onAttach				: ()->Void;
@@ -37,12 +71,6 @@ class Phidget
 	
 	@:unreflective
 	var handle						: PhidgetHandle;
-	@:unreflective
-	var onAttachCallback_internal	: PhidgetOnAttachCallback;
-	@:unreflective
-	var onDetachCallback_internal	: PhidgetOnDetachCallback;
-	@:unreflective
-	var onErrorCallback_internal	: PhidgetOnErrorCallback;
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	
@@ -65,17 +93,17 @@ class Phidget
 	@:unreflective
 	function addHandlers()
 	{
-		var c:PhidgetReturnCode = Phidget.SetOnAttachHandler(handle,onAttachCallback_internal);
+		var c:PhidgetReturnCode = Phidget.SetOnAttachHandler(handle,Phidget.OnAttachCallback_internal,Native.addressOf(this));
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget add onAttach failed: $c');
 		}	
-		c = Phidget.SetOnDetachHandler(handle,onDetachCallback_internal);
+		c = Phidget.SetOnDetachHandler(handle,Phidget.OnDetachCallback_internal,Native.addressOf(this));
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget add onDetach failed: $c');
 		}	
-		c = Phidget.SetOnErrorHandler(handle,onErrorCallback_internal);
+		c = Phidget.SetOnErrorHandler(handle,Phidget.OnErrorCallback_internal,Native.addressOf(this));
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget add onError failed: $c');
@@ -100,12 +128,16 @@ class Phidget
 	{
 		if(isDisposed)
 			return;
+
+		triggerAttachstate();
 	}
 
  	/////////////////////////////////////////////////////////////////////////////////////
 
-	function triggerAttachstate(nAttachState:Bool)
+	function triggerAttachstate()
 	{
+		var nAttachState:Bool = isAttached_internal;
+		
 		if (nAttachState!=isAttached)
 		{
 			isAttached = nAttachState;
@@ -140,13 +172,13 @@ class Phidget
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	@:extern @:native("Phidget_setOnAttachHandler")
-	public static function SetOnAttachHandler(ch:PhidgetHandle, onTagLost:PhidgetOnAttachCallback, ?ctx:VoidStar):PhidgetReturnCode;
+	public static function SetOnAttachHandler(ch:PhidgetHandle, onTagLost:PhidgetOnAttachCallback, ?ctx:cpp.Star<Phidget>):PhidgetReturnCode;
 		
 	@:extern @:native("Phidget_setOnDetachHandler")
-	public static function SetOnDetachHandler(ch:PhidgetHandle, onTagLost:PhidgetOnDetachCallback, ?ctx:VoidStar):PhidgetReturnCode;
+	public static function SetOnDetachHandler(ch:PhidgetHandle, onTagLost:PhidgetOnDetachCallback, ?ctx:cpp.Star<Phidget>):PhidgetReturnCode;
 		
 	@:extern @:native("Phidget_setOnErrorHandler")
-	public static function SetOnErrorHandler(ch:PhidgetHandle, onTagLost:PhidgetOnErrorCallback, ?ctx:VoidStar):PhidgetReturnCode;
+	public static function SetOnErrorHandler(ch:PhidgetHandle, onTagLost:PhidgetOnErrorCallback, ?ctx:cpp.Star<Phidget>):PhidgetReturnCode;
 		
 	@:extern @:native("Phidget_openWaitForAttachment")
 	public static function OpenWaitForAttachment(ch:PhidgetHandle, timeout:Int):PhidgetReturnCode;
@@ -169,6 +201,9 @@ class Phidget
 	@:extern @:native("(PhidgetHandle)handle_internal")
 	public static var Handle:PhidgetHandle;
 
+	@:extern @:native("isAttached_internal")
+	public static var isAttached_internal:Bool;
+
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	public function dispose()
@@ -181,9 +216,6 @@ class Phidget
 		}
 		model = null;
 		handle = null;
-		onAttachCallback_internal = null;
-		onDetachCallback_internal = null;
-		onErrorCallback_internal = null;
 		onAttach = null;
 		onDetach = null;
 		onError = null;
