@@ -53,10 +53,13 @@ class PhidgetRFID extends Phidget
 {
 	/////////////////////////////////////////////////////////////////////////////////////
 
-	public var hasTag				: Bool						= false;
-	public var currentTag			: String;
-	public var onTag				: (String)->Void;
-	public var onTagLost			: (String)->Void;
+	@:isVar
+	public var antennaEnabled(get,set)	: Bool						= true;
+
+	public var hasTag					: Bool						= false;
+	public var currentTag				: String;
+	public var onTag					: (String)->Void;
+	public var onTagLost				: (String)->Void;
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	
@@ -145,6 +148,21 @@ class PhidgetRFID extends Phidget
 
 	/////////////////////////////////////////////////////////////////////////////////////
 
+	function get_antennaEnabled():Bool
+	{
+		var enabl:Int = 0;
+		PhidgetRFID.GetAntennaEnabled(rfidHandle,Native.addressOf(enabl));
+		return antennaEnabled = enabl==1?true:false;
+	}
+
+	function set_antennaEnabled(value:Bool):Bool
+	{
+		PhidgetRFID.SetAntennaEnabled(rfidHandle,value==true?1:0);
+		return antennaEnabled=value;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+
 	override function declare()
 	{
 		var hndl = PhidgetRFIDHandle.declare();
@@ -154,31 +172,37 @@ class PhidgetRFID extends Phidget
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	@:extern @:native("PhidgetRFID_create")
-	public static function Create(ch:cpp.Reference<PhidgetRFIDHandle>):PhidgetReturnCode;
+	static function Create(ch:cpp.Reference<PhidgetRFIDHandle>):PhidgetReturnCode;
 
 	@:extern @:native("PhidgetRFID_delete")
-	public static function Delete(ch:cpp.Reference<PhidgetRFIDHandle>):PhidgetReturnCode;
+	static function Delete(ch:cpp.Reference<PhidgetRFIDHandle>):PhidgetReturnCode;
 
 	@:extern @:native("PhidgetRFID_setOnTagHandler")
-	public static function SetOnTagHandler(ch:PhidgetRFIDHandle, handler:PhidgetRFIDOnTagCallback, ?ctx:VoidStar):PhidgetReturnCode;
+	static function SetOnTagHandler(ch:PhidgetRFIDHandle, handler:PhidgetRFIDOnTagCallback, ?ctx:VoidStar):PhidgetReturnCode;
 
 	@:extern @:native("PhidgetRFID_setOnTagLostHandler")
-	public static function SetOnTagLost(ch:PhidgetRFIDHandle, onTagLost:PhidgetRFIDOnTagCallback, ?ctx:VoidStar):PhidgetReturnCode;
+	static function SetOnTagLost(ch:PhidgetRFIDHandle, onTagLost:PhidgetRFIDOnTagCallback, ?ctx:VoidStar):PhidgetReturnCode;
+
+	@:extern @:native("PhidgetRFID_setAntennaEnabled")
+	static function SetAntennaEnabled(ch:PhidgetRFIDHandle, antennaEnabled:Int):PhidgetReturnCode;
+
+	@:extern @:native("PhidgetRFID_getAntennaEnabled")
+	static function GetAntennaEnabled(ch:PhidgetRFIDHandle, antennaEnabled:cpp.Reference<Int>):PhidgetReturnCode;
 
 	@:extern @:native("onTag_internal")
-	public static var OnTagCallback_Internal:PhidgetRFIDOnTagCallback;
+	static var OnTagCallback_Internal:PhidgetRFIDOnTagCallback;
 
 	@:extern @:native("onTagLost_internal")
-	public static var OnTagLostCallback_Internal:PhidgetRFIDOnTagCallback;
+	static var OnTagLostCallback_Internal:PhidgetRFIDOnTagCallback;
 
 	@:extern @:native("handle_internal")
-	public static var rfidHandle:PhidgetRFIDHandle;
+	static var rfidHandle:PhidgetRFIDHandle;
 	
 	@:extern @:native("currentTag_internal")
-	public static var CurrentTag_internal:StdString;
+	static var CurrentTag_internal:StdString;
 
 	@:extern @:native("lastTag_internal")
-	public static var LastTag_internal:StdString;
+	static var LastTag_internal:StdString;
 
 	/////////////////////////////////////////////////////////////////////////////////////
 
