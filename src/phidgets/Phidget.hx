@@ -56,7 +56,7 @@ class Phidget
 	@:unreflective
 	function waitForAttachment():PhidgetReturnCode
 	{
-		var c:PhidgetReturnCode = OpenWaitForAttachment(handle,attachTimeoutMS);
+		var c:PhidgetReturnCode = Phidget.OpenWaitForAttachment(handle,attachTimeoutMS);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 			trace('Phidget wait for attchment failed: $c');
 		return c;
@@ -65,21 +65,33 @@ class Phidget
 	@:unreflective
 	function addHandlers()
 	{
-		var c:PhidgetReturnCode = SetOnAttachHandler(handle,onAttachCallback_internal);
+		var c:PhidgetReturnCode = Phidget.SetOnAttachHandler(handle,onAttachCallback_internal);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget add onAttach failed: $c');
 		}	
-		c = SetOnDetachHandler(handle,onDetachCallback_internal);
+		c = Phidget.SetOnDetachHandler(handle,onDetachCallback_internal);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget add onDetach failed: $c');
 		}	
-		c = SetOnErrorHandler(handle,onErrorCallback_internal);
+		c = Phidget.SetOnErrorHandler(handle,onErrorCallback_internal);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget add onError failed: $c');
 		}	
+	}
+
+ 	/////////////////////////////////////////////////////////////////////////////////////
+
+	public function attach()
+	{
+		addHandlers();
+		waitForAttachment();
+
+		chTimer = new Timer(checkIntervalMS);
+		chTimer.run = checkStatus;
+		isInitialized = true;
 	}
 
  	/////////////////////////////////////////////////////////////////////////////////////
@@ -112,13 +124,19 @@ class Phidget
 
 	public function close()
 	{
-		var c:PhidgetReturnCode = Close(handle);
+		var c:PhidgetReturnCode = Phidget.Close(handle);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget close failed: $c');
 		}	
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	function declare()
+	{
+	}
+	
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	@:extern @:native("Phidget_setOnAttachHandler")
@@ -161,6 +179,7 @@ class Phidget
 			chTimer.stop();
 			chTimer=null;
 		}
+		model = null;
 		handle = null;
 		onAttachCallback_internal = null;
 		onDetachCallback_internal = null;

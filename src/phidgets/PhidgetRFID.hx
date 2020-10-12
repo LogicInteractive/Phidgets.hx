@@ -85,19 +85,17 @@ class PhidgetRFID extends Phidget
 		super();
 		model = "PhidgetRFID Read-Write 1024_0";
 
-		var hndl = PhidgetRFIDHandle.declare();
-		untyped __cpp__('handle_internal = hndl');
-
+		declare();
 		if (!createPhidget())
 			return;
 
-		var c:PhidgetReturnCode = SetOnTagHandler(rfidHandle,OnTagCallback_Internal);
+		var c:PhidgetReturnCode = PhidgetRFID.SetOnTagHandler(rfidHandle,PhidgetRFID.OnTagCallback_Internal);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget set onTagHandler failed: $c');
 			return;
 		}
-		c = SetOnTagLost(rfidHandle,OnTagLostCallback_Internal);
+		c = PhidgetRFID.SetOnTagLost(rfidHandle,PhidgetRFID.OnTagLostCallback_Internal);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget set onTagLost failed: $c');
@@ -112,7 +110,7 @@ class PhidgetRFID extends Phidget
 
 	function createPhidget():Bool
 	{
-		var c:PhidgetReturnCode = Create(Native.addressOf(rfidHandle));
+		var c:PhidgetReturnCode = PhidgetRFID.Create(Native.addressOf(rfidHandle));
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget create failed: $c');
@@ -125,7 +123,7 @@ class PhidgetRFID extends Phidget
 
  	/////////////////////////////////////////////////////////////////////////////////////
 
-	public function attach()
+	override public function attach()
 	{
 		if (isInitialized)
 			return;
@@ -134,12 +132,7 @@ class PhidgetRFID extends Phidget
 		onDetachCallback_internal = Phidget.OnDetachCallback_internal;
 		onErrorCallback_internal = Phidget.OnErrorCallback_internal;
 
-		addHandlers();
-		waitForAttachment();
-
-		chTimer = new Timer(checkIntervalMS);
-		chTimer.run = checkStatus;
-		isInitialized = true;
+		super.attach();
 	}
 
  	/////////////////////////////////////////////////////////////////////////////////////
@@ -179,11 +172,19 @@ class PhidgetRFID extends Phidget
 	override public function close()
 	{
 		super.close();
-		var c:PhidgetReturnCode = Delete(Native.addressOf(rfidHandle));		
+		var c:PhidgetReturnCode = PhidgetRFID.Delete(Native.addressOf(rfidHandle));		
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('PhidgetRFID_delete failed: $c');
 		}	
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	override function declare()
+	{
+		var hndl = PhidgetRFIDHandle.declare();
+		untyped __cpp__('handle_internal = hndl');		
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -212,6 +213,12 @@ class PhidgetRFID extends Phidget
 	@:extern @:native("isAttached_internal")
 	public static var isAttached_internal:Bool;
 
+	@:extern @:native("currentTag_internal")
+	public static var CurrentTag_internal:StdString;
+
+	@:extern @:native("lastTag_internal")
+	public static var LastTag_internal:StdString;
+
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	override public function dispose()
@@ -227,13 +234,13 @@ class PhidgetRFID extends Phidget
 
 	inline function getCurrentTag_internal():String
 	{
-		var cTagSt:StdString = untyped __cpp__('currentTag_internal');
+		var cTagSt:StdString = CurrentTag_internal;
 		return cTagSt.toString();
 	}
 
 	inline function getLastTag_internal():String
 	{
-		var lTagSt:StdString = untyped __cpp__('lastTag_internal');
+		var lTagSt:StdString = LastTag_internal;
 		return lTagSt.toString();
 	}
 
