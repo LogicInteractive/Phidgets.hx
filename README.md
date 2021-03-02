@@ -1,5 +1,5 @@
 # Phidgets.hx
-Phidgets Haxe : Implementation of the Phidgets 22 api for c++ using hxcpp.
+Phidgets for Haxe : An implementation of the Phidgets 22 api for c++ using hxcpp.
 
 More descriptions and device support will be added soon!
 
