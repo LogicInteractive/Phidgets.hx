@@ -53,7 +53,7 @@ class PhidgetRotaryEncoder extends Phidget
 	public var lastPositionChange			: Int		= 0;
 	public var lastTimeChange				: Int		= 0;
 	public var lastIndexTriggered			: Int		= 0;
-	public var position						: Int		= 0;
+	public var position						: cpp.Int64	= 0;
 
 	public var onEncoderPositionChanged		: (PhidgetEncoderEventData)->Void;
 
@@ -99,9 +99,7 @@ class PhidgetRotaryEncoder extends Phidget
 	override function checkStatus()
 	{
 		super.checkStatus();
-		var tpos:cpp.Int64 = 0;
-		PhidgetRotaryEncoder.GetPosition(encoderHandle, Native.addressOf(tpos));
-		position = tpos;
+		PhidgetRotaryEncoder.GetPosition(encoderHandle, Native.addressOf(position));
 
 		if (encoderTrigger_internal)
 		{
@@ -131,7 +129,7 @@ class PhidgetRotaryEncoder extends Phidget
 		var c:PhidgetReturnCode = PhidgetRotaryEncoder.Delete(encoderHandle);		
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
-			trace('PhidgetRFID_delete failed: $c');
+			trace('PhidgetRotaryEncoder_delete failed: $c');
 		}	
 	}
 

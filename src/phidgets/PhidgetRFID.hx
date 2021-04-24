@@ -93,7 +93,7 @@ class PhidgetRFID extends Phidget
 
 	function createPhidget():Bool
 	{
-		var c:PhidgetReturnCode = PhidgetRFID.Create(Native.addressOf(rfidHandle));
+		var c:PhidgetReturnCode = PhidgetRFID.Create(rfidHandle);
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('Phidget create failed: $c');
@@ -139,7 +139,7 @@ class PhidgetRFID extends Phidget
 	override public function close()
 	{
 		super.close();
-		var c:PhidgetReturnCode = PhidgetRFID.Delete(Native.addressOf(rfidHandle));		
+		var c:PhidgetReturnCode = PhidgetRFID.Delete(rfidHandle);		
 		if (c!=PhidgetReturnCode.EPHIDGET_OK)
 		{
 			trace('PhidgetRFID_delete failed: $c');
@@ -172,10 +172,10 @@ class PhidgetRFID extends Phidget
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	@:extern @:native("PhidgetRFID_create")
-	static function Create(ch:cpp.Reference<PhidgetRFIDHandle>):PhidgetReturnCode;
+	static function Create(ch:cpp.Star<PhidgetRFIDHandle>):PhidgetReturnCode;
 
 	@:extern @:native("PhidgetRFID_delete")
-	static function Delete(ch:cpp.Reference<PhidgetRFIDHandle>):PhidgetReturnCode;
+	static function Delete(ch:cpp.Star<PhidgetRFIDHandle>):PhidgetReturnCode;
 
 	@:extern @:native("PhidgetRFID_setOnTagHandler")
 	static function SetOnTagHandler(ch:PhidgetRFIDHandle, handler:PhidgetRFIDOnTagCallback, ?ctx:VoidStar):PhidgetReturnCode;
@@ -187,7 +187,7 @@ class PhidgetRFID extends Phidget
 	static function SetAntennaEnabled(ch:PhidgetRFIDHandle, antennaEnabled:Int):PhidgetReturnCode;
 
 	@:extern @:native("PhidgetRFID_getAntennaEnabled")
-	static function GetAntennaEnabled(ch:PhidgetRFIDHandle, antennaEnabled:cpp.Reference<Int>):PhidgetReturnCode;
+	static function GetAntennaEnabled(ch:PhidgetRFIDHandle, antennaEnabled:cpp.Star<Int>):PhidgetReturnCode;
 
 	@:extern @:native("onTag_internal")
 	static var OnTagCallback_Internal:PhidgetRFIDOnTagCallback;
