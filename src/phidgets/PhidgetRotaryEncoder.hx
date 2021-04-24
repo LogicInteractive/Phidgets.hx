@@ -7,6 +7,7 @@ import cpp.Pointer;
 import cpp.Reference;
 import cpp.Star;
 import cpp.StdString;
+import cpp.UInt32;
 import haxe.Timer;
 import haxe.macro.Expr.Function;
 import phidgets.Phidget.PhidgetHandle;
@@ -50,10 +51,21 @@ class PhidgetRotaryEncoder extends Phidget
 {
 	/////////////////////////////////////////////////////////////////////////////////////
 
-	public var lastPositionChange			: Int		= 0;
-	public var lastTimeChange				: Int		= 0;
-	public var lastIndexTriggered			: Int		= 0;
-	public var position						: cpp.Int64	= 0;
+	public var lastPositionChange			: Int				= 0;
+	public var lastTimeChange				: Int				= 0;
+	public var lastIndexTriggered			: Int				= 0;
+	public var position						: cpp.Int64			= 0;
+	public var enabled(get, default)		: Bool				= false;
+
+	@:isVar
+	public var minDataInterval(get, never)	: cpp.UInt32		= 0;
+	
+	@:isVar
+	public var maxDataInterval(get, never)	: cpp.UInt32		= 0;
+
+	@:isVar
+	public var dataInterval(get, set)		: cpp.UInt32		= 0;
+
 
 	public var onEncoderPositionChanged		: (PhidgetEncoderEventData)->Void;
 
@@ -77,6 +89,8 @@ class PhidgetRotaryEncoder extends Phidget
 		
 		if (autoInit)
 			attach();
+
+		dataInterval = 16;
 	}
 	
  	/////////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +149,50 @@ class PhidgetRotaryEncoder extends Phidget
 
 	/////////////////////////////////////////////////////////////////////////////////////
 
+	@:keep
+	function get_minDataInterval():cpp.UInt32
+	{
+		var minInt:cpp.UInt32 = 0;
+		PhidgetRotaryEncoder.GetMinDataInterval(encoderHandle,Native.addressOf(minInt));
+		return minInt;
+	}
+
+	@:keep
+	function get_maxDataInterval():cpp.UInt32
+	{
+		var maxInt:cpp.UInt32 = 0;
+		PhidgetRotaryEncoder.GetMaxDataInterval(encoderHandle,Native.addressOf(maxInt));
+		return maxInt;
+	}
+
+	@:keep
+	function get_dataInterval():cpp.UInt32
+	{
+		var dInt:cpp.UInt32 = 0;
+		PhidgetRotaryEncoder.GetDataInterval(encoderHandle,Native.addressOf(dInt));
+		return dInt;
+	}
+
+	@:keep
+	function set_dataInterval(value:cpp.UInt32):cpp.UInt32
+	{
+		if (value<minDataInterval)
+			value = minDataInterval;
+		else if (value>maxDataInterval)
+			value = maxDataInterval;
+
+		PhidgetRotaryEncoder.SetDataInterval(encoderHandle,value);
+		return dataInterval=value;
+	}
+
+	@:keep
+	function get_enabled():Bool
+	{
+		var isEnabled:Int = 0;
+		PhidgetRotaryEncoder.GetEnabled(encoderHandle,Native.addressOf(isEnabled));
+		return isEnabled==1;
+	}
+
 	override function declare()
 	{
 		var hndl = PhidgetEncoderHandle.declare();
@@ -157,6 +215,21 @@ class PhidgetRotaryEncoder extends Phidget
 
 	@:extern @:native("PhidgetEncoder_setOnPositionChangeHandler")
 	static function SetOnPositionChangeHandler(ch:PhidgetEncoderHandle, handler:PhidgetEncoderOnPositionChangeCallback, ?ctx:VoidStar):PhidgetReturnCode;
+
+	@:extern @:native("PhidgetEncoder_getMinDataInterval")
+	static function GetMinDataInterval(ch:PhidgetEncoderHandle, minDataInterval:cpp.Star<cpp.UInt32>):PhidgetReturnCode;
+
+	@:extern @:native("PhidgetEncoder_getMaxDataInterval")
+	static function GetMaxDataInterval(ch:PhidgetEncoderHandle, maxDataInterval:cpp.Star<cpp.UInt32>):PhidgetReturnCode;
+
+	@:extern @:native("PhidgetEncoder_getEnabled")
+	static function GetEnabled(ch:PhidgetEncoderHandle, enabled:cpp.Star<cpp.UInt32>):PhidgetReturnCode;
+
+	@:extern @:native("PhidgetEncoder_getDataInterval")
+	static function GetDataInterval(ch:PhidgetEncoderHandle, dataInterval:cpp.Star<Int>):PhidgetReturnCode;
+	
+	@:extern @:native("PhidgetEncoder_setDataInterval")
+	static function SetDataInterval(ch:PhidgetEncoderHandle, dataInterval:Int):PhidgetReturnCode;
 
 	@:extern @:native("onEncoder_PositionChange")
 	static var OnEncoderPositionChange:PhidgetEncoderOnPositionChangeCallback;
